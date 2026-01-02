@@ -1,6 +1,7 @@
 import express from 'express'
 import { upload } from '../config/multer.js'
 import OpenAI from 'openai'
+import { AssemblyAI } from 'assemblyai'
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
@@ -25,6 +26,21 @@ const getOpenAIClient = () => {
     })
   }
   return openai
+}
+
+// Initialize AssemblyAI client - will be created when needed
+let assemblyAIClient = null
+
+const getAssemblyAIClient = () => {
+  if (!assemblyAIClient) {
+    if (!process.env.ASSEMBLYAI_API_KEY) {
+      throw new Error('ASSEMBLYAI_API_KEY not configured')
+    }
+    assemblyAIClient = new AssemblyAI({
+      apiKey: process.env.ASSEMBLYAI_API_KEY
+    })
+  }
+  return assemblyAIClient
 }
 
 /**
@@ -187,6 +203,78 @@ router.post('/transcribe', upload.single('video'), async (req, res) => {
             if (elevenLabsError.response?.data) {
               console.error('Error response:', elevenLabsError.response.data)
             }
+            transcription = await client.audio.transcriptions.create({
+              file: fs.createReadStream(audioPath),
+              model: 'whisper-1',
+              response_format: 'verbose_json',
+            })
+            detectedLanguage = transcription.language
+            duration = transcription.duration
+            translationText = transcription.text
+          }
+        }
+        break
+
+      case 'assemblyai':
+        // AssemblyAI implementation
+        console.log('Transcribing with AssemblyAI...')
+        
+        if (!process.env.ASSEMBLYAI_API_KEY) {
+          console.log('AssemblyAI API key not found, falling back to Whisper')
+          transcription = await client.audio.transcriptions.create({
+            file: fs.createReadStream(audioPath),
+            model: 'whisper-1',
+            response_format: 'verbose_json',
+          })
+          detectedLanguage = transcription.language
+          duration = transcription.duration
+          translationText = transcription.text
+        } else {
+          try {
+            console.log('Uploading audio to AssemblyAI...')
+            const assemblyai = getAssemblyAIClient()
+            
+            // Transcribe the audio file
+            const transcript = await assemblyai.transcripts.transcribe({
+              audio: audioPath,
+              language_detection: true,  // Auto-detect language
+            })
+            
+            console.log('AssemblyAI transcription complete')
+            
+            // Extract data
+            originalTranscription = transcript.text
+            detectedLanguage = transcript.language_code || 'unknown'
+            duration = transcript.audio_duration || 0
+            
+            console.log(`Language: ${detectedLanguage}`)
+            console.log(`Confidence: ${transcript.confidence || 'N/A'}`)
+            console.log(`Duration: ${duration}s`)
+            
+            // Translate to English using GPT-4o-mini if not already in English
+            if (detectedLanguage && detectedLanguage !== 'en' && detectedLanguage !== 'en_us' && detectedLanguage !== 'unknown') {
+              console.log(`Translating from ${detectedLanguage} to English with GPT-4o-mini...`)
+              const translation = await client.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [
+                  {
+                    role: 'system',
+                    content: 'You are a professional translator. Translate the following text to English accurately. Only provide the translation, no explanations or additional text.'
+                  },
+                  {
+                    role: 'user',
+                    content: originalTranscription
+                  }
+                ],
+              })
+              translationText = translation.choices[0].message.content
+              console.log('Translation to English complete')
+            } else {
+              console.log('Audio is already in English, skipping translation')
+              translationText = originalTranscription
+            }
+          } catch (assemblyAIError) {
+            console.error('AssemblyAI API error, falling back to Whisper:', assemblyAIError.message)
             transcription = await client.audio.transcriptions.create({
               file: fs.createReadStream(audioPath),
               model: 'whisper-1',

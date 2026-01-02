@@ -13,7 +13,7 @@ function ResultsDisplay({ transcriptionResult, ocrResult }) {
           
           {transcriptionResult.model && (
             <div className="model-badge">
-              <span>Model: <strong>{transcriptionResult.model === 'whisper' ? 'OpenAI Whisper' : transcriptionResult.model === 'gpt-4o-mini' ? 'GPT-4o Mini' : transcriptionResult.model === 'elevenlabs' ? 'ElevenLabs' : 'Chatterbox'}</strong></span>
+              <span>Model: <strong>{transcriptionResult.model === 'whisper' ? 'OpenAI Whisper' : transcriptionResult.model === 'elevenlabs' ? 'ElevenLabs Scribe V1' : transcriptionResult.model === 'assemblyai' ? 'AssemblyAI' : transcriptionResult.model}</strong></span>
             </div>
           )}
           

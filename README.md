@@ -5,16 +5,22 @@ A React-based web application for annotating video clips with AI-powered audio t
 ## Features
 
 - **Video Upload**: Support for 20-30 second video clips
-- **Audio Transcription**: Uses OpenAI's Whisper model to transcribe and translate audio to English with summary
+- **Multiple AI Transcription Models**: 
+  - OpenAI Whisper (default)
+  - ElevenLabs Scribe (high-quality transcription)
+  - AssemblyAI (professional-grade with advanced features)
+- **Audio Transcription**: Transcribe and translate audio to English with AI-powered summary
 - **OCR Text Extraction**: Extracts text from video frames and translates to English using Tesseract.js
 - **Real-time Processing**: Visual feedback during processing
-- **Modern UI**: Clean and intuitive interface
+- **Modern UI**: Clean and intuitive interface with model selection
 
 ## Prerequisites
 
 - Node.js (v18 or higher)
 - npm or yarn
-- OpenAI API key
+- OpenAI API key (required)
+- ElevenLabs API key (optional - for ElevenLabs Scribe model)
+- AssemblyAI API key (optional - for AssemblyAI model)
 - FFmpeg (for audio extraction)
 
 ### Installing FFmpeg
@@ -44,11 +50,19 @@ Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH
    cp .env.example .env
    ```
    
-   Edit `.env` and add your OpenAI API key:
+   Edit `.env` and add your API keys:
    ```
-   OPENAI_API_KEY=your_actual_api_key_here
+   OPENAI_API_KEY=your_openai_api_key_here
+   ELEVENLABS_API_KEY=your_elevenlabs_api_key_here  # Optional
+   ASSEMBLYAI_API_KEY=your_assemblyai_api_key_here  # Optional
    PORT=5000
    ```
+   
+   **Note:** 
+   - OpenAI API key is required for all transcription models
+   - ElevenLabs API key is only needed if you want to use the ElevenLabs Scribe model
+   - AssemblyAI API key is only needed if you want to use the AssemblyAI model
+   - Without optional API keys, the tool will fall back to Whisper when those models are selected
 
 3. **Start the development server:**
    

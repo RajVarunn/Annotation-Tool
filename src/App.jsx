@@ -91,6 +91,7 @@ function App() {
               >
                 <option value="whisper">OpenAI Whisper</option>
                 <option value="elevenlabs">ElevenLabs Scribe V1</option>
+                <option value="assemblyai">AssemblyAI</option>
               </select>
             </div>
             
