@@ -13,6 +13,7 @@ function App() {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [isExtracting, setIsExtracting] = useState(false)
   const [error, setError] = useState(null)
+  const [selectedModel, setSelectedModel] = useState('whisper')
 
   const handleVideoUpload = (file) => {
     setVideoFile(file)
@@ -33,7 +34,7 @@ function App() {
     setTranscriptionResult(null)
 
     try {
-      const result = await transcribeVideo(videoFile)
+      const result = await transcribeVideo(videoFile, selectedModel)
       setTranscriptionResult(result)
     } catch (err) {
       setError(`Transcription error: ${err.message}`)
@@ -68,7 +69,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>🎬 Video Annotation Tool</h1>
-        <p>Upload a video, transcribe audio with Whisper, or extract text with OCR</p>
+        <p>Upload a video, transcribe audio with multiple AI models, or extract text with OCR</p>
       </header>
 
       <main className="App-main">
@@ -80,13 +81,26 @@ function App() {
           <div className="video-section">
             <VideoPlayer videoUrl={videoUrl} />
             
+            <div className="model-selector">
+              <label htmlFor="model-select">Select Transcription Model:</label>
+              <select 
+                id="model-select"
+                value={selectedModel} 
+                onChange={(e) => setSelectedModel(e.target.value)}
+                disabled={isTranscribing || isExtracting}
+              >
+                <option value="whisper">OpenAI Whisper</option>
+                <option value="elevenlabs">ElevenLabs Scribe V1</option>
+              </select>
+            </div>
+            
             <div className="action-buttons">
               <button 
                 onClick={handleTranscribe} 
                 disabled={isTranscribing || isExtracting}
                 className="primary-button"
               >
-                {isTranscribing ? '🔄 Transcribing...' : '🎙️ Transcribe Audio with Whisper'}
+                {isTranscribing ? '🔄 Transcribing...' : `🎙️ Transcribe Audio with ${selectedModel === 'whisper' ? 'Whisper' : selectedModel === 'elevenlabs' ? 'ElevenLabs': `Selected Model`}`}
               </button>
               
               <button 

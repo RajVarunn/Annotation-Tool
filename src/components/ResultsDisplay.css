@@ -22,6 +22,22 @@
   background-clip: text;
 }
 
+.model-badge {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  border: 2px solid rgba(102, 126, 234, 0.4);
+  border-radius: 20px;
+  font-size: 0.95rem;
+  color: #a8b7ff;
+}
+
+.model-badge strong {
+  color: #c4d0ff;
+  margin-left: 0.3rem;
+}
+
 .result-box {
   margin-bottom: 1.5rem;
   padding: 1.5rem;

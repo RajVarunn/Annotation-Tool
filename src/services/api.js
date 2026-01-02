@@ -9,14 +9,16 @@ const api = axios.create({
 })
 
 /**
- * Transcribe video audio using OpenAI Whisper
+ * Transcribe video audio using selected AI model
  * @param {File} videoFile - The video file to transcribe
+ * @param {string} model - The transcription model to use ('whisper', 'gpt-4o-mini', 'elevenlabs', 'chatterbox')
  * @returns {Promise<Object>} - Transcription results
  */
-export const transcribeVideo = async (videoFile) => {
+export const transcribeVideo = async (videoFile, model = 'whisper') => {
   try {
     const formData = new FormData()
     formData.append('video', videoFile)
+    formData.append('model', model)
 
     const response = await api.post('/whisper/transcribe', formData, {
       headers: {

@@ -11,6 +11,12 @@ function ResultsDisplay({ transcriptionResult, ocrResult }) {
         <div className="result-section transcription-section">
           <h2>🎙️ Audio Transcription Results</h2>
           
+          {transcriptionResult.model && (
+            <div className="model-badge">
+              <span>Model: <strong>{transcriptionResult.model === 'whisper' ? 'OpenAI Whisper' : transcriptionResult.model === 'gpt-4o-mini' ? 'GPT-4o Mini' : transcriptionResult.model === 'elevenlabs' ? 'ElevenLabs' : 'Chatterbox'}</strong></span>
+            </div>
+          )}
+          
           {transcriptionResult.transcription && (
             <div className="result-box">
               <h3>Original Transcription:</h3>
