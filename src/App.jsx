@@ -3,7 +3,8 @@ import './App.css'
 import VideoUploader from './components/VideoUploader'
 import VideoPlayer from './components/VideoPlayer'
 import ResultsDisplay from './components/ResultsDisplay'
-import { transcribeVideo, extractTextFromVideo } from './services/api'
+import VoiceRecorder from './components/VoiceRecorder'
+import { transcribeVideo, extractTextFromVideo, transcribeVoice, generateFinalSummary } from './services/api'
 
 function App() {
   const [videoFile, setVideoFile] = useState(null)
@@ -14,6 +15,9 @@ function App() {
   const [isExtracting, setIsExtracting] = useState(false)
   const [error, setError] = useState(null)
   const [selectedModel, setSelectedModel] = useState('whisper')
+  const [userVoiceInput, setUserVoiceInput] = useState(null)
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false)
+  const [finalSummary, setFinalSummary] = useState(null)
 
   const handleVideoUpload = (file) => {
     setVideoFile(file)
@@ -62,6 +66,49 @@ function App() {
       console.error('OCR error:', err)
     } finally {
       setIsExtracting(false)
+    }
+  }
+
+  const handleVoiceRecording = async (audioBlob) => {
+    setIsProcessingVoice(true)
+    setError(null)
+
+    try {
+      const result = await transcribeVoice(audioBlob)
+      setUserVoiceInput(result)
+      console.log('Voice transcribed:', result)
+    } catch (err) {
+      setError(`Voice transcription error: ${err.message}`)
+      console.error('Voice error:', err)
+    } finally {
+      setIsProcessingVoice(false)
+    }
+  }
+
+  const handleGenerateFinalSummary = async () => {
+    if (!transcriptionResult?.summary) {
+      setError('Please transcribe the video first')
+      return
+    }
+    if (!userVoiceInput?.translation) {
+      setError('Please record your voice input first')
+      return
+    }
+
+    setIsProcessingVoice(true)
+    setError(null)
+
+    try {
+      const result = await generateFinalSummary(
+        transcriptionResult.summary,
+        userVoiceInput.translation
+      )
+      setFinalSummary(result.finalSummary)
+    } catch (err) {
+      setError(`Final summary error: ${err.message}`)
+      console.error('Final summary error:', err)
+    } finally {
+      setIsProcessingVoice(false)
     }
   }
 
@@ -125,6 +172,50 @@ function App() {
           transcriptionResult={transcriptionResult}
           ocrResult={ocrResult}
         />
+
+        {transcriptionResult && (
+          <div className="voice-input-section">
+            <h2>🎤 Add Your Perspective</h2>
+            <p>Record your thoughts about the video to create a comprehensive summary</p>
+            
+            <VoiceRecorder 
+              onRecordingComplete={handleVoiceRecording}
+              isProcessing={isProcessingVoice}
+            />
+
+            {userVoiceInput && (
+              <div className="voice-result">
+                <h3>Your Input:</h3>
+                <div className="voice-box">
+                  <p><strong>Original:</strong> {userVoiceInput.transcription}</p>
+                  {userVoiceInput.translation !== userVoiceInput.transcription && (
+                    <p><strong>English:</strong> {userVoiceInput.translation}</p>
+                  )}
+                  <p><strong>Language:</strong> {userVoiceInput.language}</p>
+                </div>
+              </div>
+            )}
+
+            {userVoiceInput && transcriptionResult.summary && (
+              <button 
+                onClick={handleGenerateFinalSummary}
+                disabled={isProcessingVoice}
+                className="final-summary-button"
+              >
+                {isProcessingVoice ? '🔄 Generating Final Summary...' : '✨ Generate Combined Summary'}
+              </button>
+            )}
+
+            {finalSummary && (
+              <div className="final-summary-result">
+                <h3>📋 Final Comprehensive Summary</h3>
+                <div className="final-summary-box">
+                  <p>{finalSummary}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   )

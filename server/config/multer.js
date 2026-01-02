@@ -17,6 +17,7 @@ const storage = multer.diskStorage({
   }
 })
 
+// Upload middleware for videos
 export const upload = multer({ 
   storage: storage,
   limits: {
@@ -27,6 +28,22 @@ export const upload = multer({
       cb(null, true)
     } else {
       cb(new Error('Only video files are allowed'))
+    }
+  }
+})
+
+// Upload middleware for audio files (voice recordings)
+export const uploadAudio = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024 // 50MB limit for audio
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept audio files or WebM (which is what MediaRecorder produces)
+    if (file.mimetype.startsWith('audio/') || file.mimetype === 'video/webm') {
+      cb(null, true)
+    } else {
+      cb(new Error('Only audio files are allowed'))
     }
   }
 })

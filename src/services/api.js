@@ -64,4 +64,55 @@ export const extractTextFromVideo = async (videoFile) => {
   }
 }
 
+/**
+ * Transcribe user voice input
+ * @param {Blob} audioBlob - The audio blob from voice recording
+ * @returns {Promise<Object>} - Transcription and translation results
+ */
+export const transcribeVoice = async (audioBlob) => {
+  try {
+    const formData = new FormData()
+    formData.append('audio', audioBlob, 'voice-input.webm')
+
+    const response = await api.post('/whisper/transcribe-voice', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    return response.data
+  } catch (error) {
+    console.error('Error transcribing voice:', error)
+    throw new Error(
+      error.response?.data?.error || 
+      error.message || 
+      'Failed to transcribe voice input'
+    )
+  }
+}
+
+/**
+ * Generate final summary combining video and user perspectives
+ * @param {string} videoSummary - The summary from video transcription
+ * @param {string} userInput - The user's translated voice input
+ * @returns {Promise<Object>} - Combined summary
+ */
+export const generateFinalSummary = async (videoSummary, userInput) => {
+  try {
+    const response = await api.post('/whisper/final-summary', {
+      videoSummary,
+      userInput,
+    })
+
+    return response.data
+  } catch (error) {
+    console.error('Error generating final summary:', error)
+    throw new Error(
+      error.response?.data?.error || 
+      error.message || 
+      'Failed to generate final summary'
+    )
+  }
+}
+
 export default api

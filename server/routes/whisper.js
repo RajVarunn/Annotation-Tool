@@ -1,5 +1,5 @@
 import express from 'express'
-import { upload } from '../config/multer.js'
+import { upload, uploadAudio } from '../config/multer.js'
 import OpenAI from 'openai'
 import { AssemblyAI } from 'assemblyai'
 import axios from 'axios'
@@ -338,6 +338,132 @@ router.post('/transcribe', upload.single('video'), async (req, res) => {
     res.status(500).json({ 
       error: error.message || 'Failed to transcribe video',
       details: error.response?.data || error.toString()
+    })
+  }
+})
+
+/**
+ * POST /api/whisper/transcribe-voice
+ * Transcribe user voice input and translate to English
+ */
+router.post('/transcribe-voice', uploadAudio.single('audio'), async (req, res) => {
+  let audioPath = null
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file uploaded' })
+    }
+
+    audioPath = req.file.path
+    console.log('Processing voice input:', audioPath)
+
+    // Get OpenAI client
+    const client = getOpenAIClient()
+
+    // Transcribe with Whisper
+    console.log('Transcribing voice with Whisper...')
+    const transcription = await client.audio.transcriptions.create({
+      file: fs.createReadStream(audioPath),
+      model: 'whisper-1',
+      response_format: 'verbose_json',
+    })
+
+    const detectedLanguage = transcription.language
+    const originalText = transcription.text
+
+    console.log('Voice transcription complete. Language:', detectedLanguage)
+
+    // Translate to English if needed
+    let translationText = originalText
+    if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
+      console.log('Translating voice to English...')
+      const translation = await client.audio.translations.create({
+        file: fs.createReadStream(audioPath),
+        model: 'whisper-1',
+      })
+      translationText = translation.text
+      console.log('Voice translation complete')
+    }
+
+    // Clean up file
+    fs.unlinkSync(audioPath)
+
+    // Return results
+    res.json({
+      transcription: originalText,
+      translation: translationText,
+      language: detectedLanguage,
+    })
+
+  } catch (error) {
+    console.error('Error in voice transcription:', error)
+    
+    // Clean up file on error
+    if (audioPath && fs.existsSync(audioPath)) {
+      fs.unlinkSync(audioPath)
+    }
+
+    res.status(500).json({ 
+      error: error.message || 'Failed to transcribe voice',
+      details: error.toString()
+    })
+  }
+})
+
+/**
+ * POST /api/whisper/final-summary
+ * Generate final summary combining video and user perspectives
+ */
+router.post('/final-summary', async (req, res) => {
+  try {
+    const { videoSummary, userInput } = req.body
+
+    if (!videoSummary || !userInput) {
+      return res.status(400).json({ error: 'Missing videoSummary or userInput' })
+    }
+
+    console.log('Generating final combined summary...')
+
+    // Get OpenAI client
+    const client = getOpenAIClient()
+
+    // Generate combined summary
+    const summary = await client.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert at creating comprehensive summaries that combine multiple perspectives. Your task is to synthesize information from both a video transcription summary and a user\'s personal observations/thoughts about the video. Create a unified, coherent summary that incorporates both viewpoints, highlighting any agreements, contrasts, or complementary insights.'
+        },
+        {
+          role: 'user',
+          content: `Please create a comprehensive summary that combines these two perspectives:
+
+VIDEO SUMMARY:
+${videoSummary}
+
+USER'S PERSPECTIVE:
+${userInput}
+
+Create a final summary that integrates both viewpoints into a cohesive narrative.`
+        }
+      ],
+      max_tokens: 300,
+    })
+
+    const finalSummary = summary.choices[0].message.content
+
+    console.log('Final summary generated successfully')
+
+    res.json({
+      finalSummary,
+    })
+
+  } catch (error) {
+    console.error('Error generating final summary:', error)
+    res.status(500).json({ 
+      error: error.message || 'Failed to generate final summary',
+      details: error.toString()
     })
   }
 })

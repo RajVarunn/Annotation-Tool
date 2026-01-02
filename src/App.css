@@ -148,6 +148,108 @@
   color: #ef4444;
 }
 
+.voice-input-section {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.voice-input-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.voice-input-section > p {
+  opacity: 0.8;
+  margin-bottom: 1.5rem;
+}
+
+.voice-result {
+  margin: 2rem 0;
+  text-align: left;
+}
+
+.voice-result h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #f5576c;
+}
+
+.voice-box {
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border-left: 4px solid #f5576c;
+}
+
+.voice-box p {
+  margin: 0.8rem 0;
+  line-height: 1.6;
+}
+
+.voice-box strong {
+  color: #ffb7c5;
+  margin-right: 0.5rem;
+}
+
+.final-summary-button {
+  margin-top: 1.5rem;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.final-summary-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.final-summary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.final-summary-result {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.final-summary-result h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.final-summary-box {
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 12px;
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.final-summary-box p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.95);
+}
+
 @media (max-width: 768px) {
   .App {
     padding: 1rem;
@@ -165,4 +267,9 @@
   .secondary-button {
     width: 100%;
   }
+
+  .voice-input-section {
+    padding: 1.5rem;
+  }
 }
+
