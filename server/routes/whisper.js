@@ -1,7 +1,6 @@
 import express from 'express'
 import { upload } from '../config/multer.js'
 import OpenAI from 'openai'
-import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
@@ -26,21 +25,6 @@ const getOpenAIClient = () => {
     })
   }
   return openai
-}
-
-// Initialize ElevenLabs client - will be created when needed
-let elevenLabsClient = null
-
-const getElevenLabsClient = () => {
-  if (!elevenLabsClient) {
-    if (!process.env.ELEVENLABS_API_KEY) {
-      throw new Error('ELEVENLABS_API_KEY not configured')
-    }
-    elevenLabsClient = new ElevenLabsClient({
-      apiKey: process.env.ELEVENLABS_API_KEY
-    })
-  }
-  return elevenLabsClient
 }
 
 /**
